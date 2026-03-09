@@ -65,7 +65,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-purple-50 to-blue-100 relative overflow-hidden">
       {/* Decorative circles */}
       <div className="absolute top-10 left-10 w-48 h-48 bg-purple-200 rounded-full opacity-30 blur-3xl"></div>
       <div className="absolute bottom-20 right-20 w-64 h-64 bg-blue-200 rounded-full opacity-30 blur-3xl"></div>
@@ -116,7 +116,7 @@ const AuthPage = () => {
             onClick={() => setIsLogin(true)}
             className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
               isLogin
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                ? "bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-md"
                 : "text-gray-600 hover:text-gray-800"
             }`}>
             Sign In
@@ -125,7 +125,7 @@ const AuthPage = () => {
             onClick={() => setIsLogin(false)}
             className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
               !isLogin
-                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md"
+                ? "bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-md"
                 : "text-gray-600 hover:text-gray-800"
             }`}>
             Sign Up
@@ -180,7 +180,7 @@ const AuthPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+              className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
@@ -267,7 +267,7 @@ const AuthPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+              className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
