@@ -1,317 +1,244 @@
+// src/pages/AuthPage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
 
-const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+const LoginForm = ({ onSwitch }) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
-  const { login, signup } = useAuth();
 
-  const [loginForm, setLoginForm] = useState({
-    email: "",
-    password: "",
-  });
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const [signupForm, setSignupForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "mentee",
-  });
-
-  const handleLoginChange = (e) => {
-    const { name, value } = e.target;
-    setLoginForm((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleSignupChange = (e) => {
-    const { name, value } = e.target;
-    setSignupForm((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleLoginSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await login(loginForm);
-      navigate(
-        res.user.role === "mentor" || res.user.role === "admin"
-          ? "/dashboard/mentor"
-          : "/dashboard/mentee",
-      );
+      const data = await login(form);
+      const role = data.user?.role;
+      navigate(role === "mentor" || role === "admin" ? "/dashboard/mentor" : "/dashboard/mentee");
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignupSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await signup(signupForm);
-      setIsLogin(true);
-    } catch (err) {
-      setError("Registration failed. Please try again.");
+      setError(err?.message || "Email atau password salah.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-purple-50 to-blue-100 relative overflow-hidden">
-      {/* Decorative circles */}
-      <div className="absolute top-10 left-10 w-48 h-48 bg-purple-200 rounded-full opacity-30 blur-3xl"></div>
-      <div className="absolute bottom-20 right-20 w-64 h-64 bg-blue-200 rounded-full opacity-30 blur-3xl"></div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-600 px-3.5 py-3 rounded-lg text-sm">
+          <svg className="w-4 h-4 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+          </svg>
+          {error}
+        </div>
+      )}
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        placeholder="nama@email.com"
+        value={form.email}
+        onChange={handleChange}
+        required
+      />
+      <Input
+        label="Password"
+        name="password"
+        type="password"
+        placeholder="Masukkan password"
+        value={form.password}
+        onChange={handleChange}
+        required
+      />
+      <Button type="submit" loading={loading} fullWidth className="mt-2">
+        Masuk
+      </Button>
+      <p className="text-center text-sm text-slate-500">
+        Belum punya akun?{" "}
+        <button type="button" onClick={onSwitch} className="text-indigo-600 font-medium hover:underline">
+          Daftar sekarang
+        </button>
+      </p>
+    </form>
+  );
+};
 
-      {/* Back button */}
-      <button className="absolute top-8 left-8 bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all">
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-      </button>
+const SignupForm = ({ onSwitch }) => {
+  const { signup } = useAuth();
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-      {/* Main Card */}
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-12 relative z-10">
-        {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl mb-4 shadow-lg">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
-              />
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await signup(form);
+      setSuccess(true);
+      setTimeout(() => onSwitch(), 1500);
+    } catch (err) {
+      setError(err?.message || "Pendaftaran gagal. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8 text-center">
+        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+          <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p className="text-slate-700 font-medium">Akun berhasil dibuat!</p>
+        <p className="text-slate-400 text-sm">Mengarahkan ke halaman masuk...</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-600 px-3.5 py-3 rounded-lg text-sm">
+          <svg className="w-4 h-4 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+          </svg>
+          {error}
+        </div>
+      )}
+      <Input
+        label="Nama Lengkap"
+        name="name"
+        type="text"
+        placeholder="John Doe"
+        value={form.name}
+        onChange={handleChange}
+        required
+      />
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        placeholder="nama@email.com"
+        value={form.email}
+        onChange={handleChange}
+        required
+      />
+      <Input
+        label="Password"
+        name="password"
+        type="password"
+        placeholder="Min. 8 karakter"
+        value={form.password}
+        onChange={handleChange}
+        required
+      />
+      <Button type="submit" loading={loading} fullWidth className="mt-2">
+        Buat Akun
+      </Button>
+      <p className="text-center text-sm text-slate-500">
+        Sudah punya akun?{" "}
+        <button type="button" onClick={onSwitch} className="text-indigo-600 font-medium hover:underline">
+          Masuk
+        </button>
+      </p>
+    </form>
+  );
+};
+
+const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 flex-col justify-between p-12">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-blue-600 mb-2">
-            Helpdesk Portal
-          </h1>
-          <p className="text-gray-600">Welcome back! Sign in to continue</p>
+          <span className="text-white font-semibold text-lg">InternMGT</span>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex mb-8 bg-gray-100 rounded-xl p-1">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-              isLogin
-                ? "bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                : "text-gray-600 hover:text-gray-800"
-            }`}>
-            Sign In
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-              !isLogin
-                ? "bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-md"
-                : "text-gray-600 hover:text-gray-800"
-            }`}>
-            Sign Up
-          </button>
+        <div>
+          <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+            Kelola intern program<br />dengan lebih mudah.
+          </h2>
+          <p className="text-indigo-200 text-lg leading-relaxed">
+            Platform manajemen magang modern untuk mentor dan mentee — dari task tracking hingga progress monitoring.
+          </p>
         </div>
 
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          {isLogin ? "Sign In" : "Sign Up"}
-        </h2>
+        <div className="grid grid-cols-2 gap-4">
+          {[
+            { label: "Task selesai tepat waktu", value: "94%" },
+            { label: "Tim aktif", value: "200+" },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white/10 rounded-xl p-4">
+              <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <p className="text-indigo-200 text-sm mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
-            {error}
+      {/* Right Panel - Form */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <span className="font-semibold text-slate-800">InternMGT</span>
           </div>
-        )}
 
-        {/* Forms */}
-        {isLogin ? (
-          <form onSubmit={handleLoginSubmit} className="space-y-5">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Email<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={loginForm.email}
-                onChange={handleLoginChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Password<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={loginForm.password}
-                onChange={handleLoginChange}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  Sign In
-                </>
-              )}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleSignupSubmit} className="space-y-5">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Full Name<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={signupForm.name}
-                onChange={handleSignupChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Email<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={signupForm.email}
-                onChange={handleSignupChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Password<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="password"
-                type="password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={signupForm.password}
-                onChange={handleSignupChange}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Confirm Password<span className="text-red-500">*</span>
-              </label>
-              <input
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                value={signupForm.confirmPassword}
-                onChange={handleSignupChange}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                    />
-                  </svg>
-                  Sign Up
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* Footer Link */}
-        <div className="text-center mt-8 text-gray-600">
-          {isLogin ? (
-            <p>
-              Don't have an account?{" "}
-              <button
-                onClick={() => setIsLogin(false)}
-                className="text-blue-600 font-semibold hover:underline">
-                Create an account →
-              </button>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-800">
+              {isLogin ? "Selamat datang kembali" : "Buat akun baru"}
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">
+              {isLogin ? "Masukkan kredensial Anda untuk melanjutkan" : "Daftarkan diri Anda untuk mulai menggunakan InternMGT"}
             </p>
-          ) : (
-            <p>
-              Already have an account?{" "}
+          </div>
+
+          {/* Tab Switcher */}
+          <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
+            {["Masuk", "Daftar"].map((label, i) => (
               <button
-                onClick={() => setIsLogin(true)}
-                className="text-blue-600 font-semibold hover:underline">
-                Sign in →
+                key={label}
+                onClick={() => setIsLogin(i === 0)}
+                className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-150 ${
+                  (i === 0) === isLogin
+                    ? "bg-white text-slate-800 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {label}
               </button>
-            </p>
-          )}
+            ))}
+          </div>
+
+          {isLogin
+            ? <LoginForm onSwitch={() => setIsLogin(false)} />
+            : <SignupForm onSwitch={() => setIsLogin(true)} />
+          }
         </div>
       </div>
     </div>

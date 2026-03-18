@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import authService from "../services/auth.service";
 
@@ -5,9 +6,7 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth harus digunakan dalam AuthProvider");
-  }
+  if (!context) throw new Error("useAuth harus digunakan dalam AuthProvider");
   return context;
 };
 
@@ -16,11 +15,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user sudah login saat app dimuat
     const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
+    if (currentUser) setUser(currentUser);
     setLoading(false);
   }, []);
 
@@ -31,12 +27,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
-    const data = await authService.signup(userData);
-    return data;
+    return await authService.signup(userData);
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout();
     setUser(null);
   };
 
@@ -46,8 +41,8 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     loading,
-    isAuthenticated: authService.isAuthenticated(),
-    isMentor: authService.isMentor(),
+    isAuthenticated: !!user || authService.isAuthenticated(),
+    isMentor: user?.role === "mentor" || user?.role === "admin",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
